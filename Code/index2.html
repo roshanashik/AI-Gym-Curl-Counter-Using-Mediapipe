@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bicep-Curl Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f3f3;
+            margin: 0;
+            padding: 0;
+            background-image: url('/static/gm2.jpg'); /* Placeholder background image */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 20px;
+            align-items: center;
+        }
+
+        h1 {
+            color: #35495e;
+            font-weight: bold;
+            font-size: 36px;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            grid-column: span 2;
+            text-align: center;
+        }
+
+        label {
+            font-size: 18px;
+            margin-right: 10px;
+            color: #555;
+        }
+
+        input[type="number"],
+        select {
+            font-size: 16px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+            width: calc(100% - 20px);
+            max-width: 100%;
+            margin-top: 5px;
+        }
+
+        input[type="number"]:hover, input[type="number"]:focus,
+        select:hover, select:focus {
+            border-color: #009999;
+            outline: none;
+        }
+
+        .button-container {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: #00adb5;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #009999;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #cameraFeed {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            grid-column: span 2;
+            margin-bottom: 20px;
+        }
+
+        #calories, #bmi {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #555;
+            transition: color 0.3s;
+        }
+
+        #bmi {
+            margin-top: 10px;
+            font-size: 24px;
+            transition: color 0.3s;
+        }
+
+        #bmi.overweight {
+            color: #FFD700; /* Change color for overweight BMI */
+        }
+
+        #bmi.obese {
+            color: #FF4500; /* Change color for obese BMI */
+        }
+
+        #bmiChart {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            margin-top: 20px;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .bmi-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .underweight {
+            background-color: #FF6347; /* Tomato */
+        }
+
+        .normal-weight {
+            background-color: #32CD32; /* LimeGreen */
+        }
+
+        .overweight {
+            background-color: #FFD700; /* Gold */
+        }
+
+        .obese {
+            background-color: #FF4500; /* OrangeRed */
+        }
+
+        .feedback {
+            margin-top: 20px;
+            text-align: left;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            grid-column: span 2;
+        }
+
+        .feedback h3 {
+            margin-top: 0;
+            color: #35495e;
+        }
+
+        .feedback p {
+            color: #555;
+        }
+
+        .user-feedback {
+            margin-top: 20px;
+            font-size: 16px;
+            text-align: center;
+            color: #555;
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bicep-Curl Tracker</h1>
+        <div>
+            <label for="weightSelect">Select Dumbbell Weight:</label>
+            <select id="weightSelect">
+                <option value="2.5 kg">2.5 kg</option>
+                <option value="5 kg">5 kg</option>
+                <option value="7.5 kg">7.5 kg</option>
+                <option value="10 kg">10 kg</option>
+            </select>
+        </div>
+        <div>
+            <label for="userWeight">Enter Your Weight (in kg):</label>
+            <input type="number" id="userWeight" placeholder="Weight in kg">
+        </div>
+        <div>
+            <label for="heightInput">Enter Your Height (in cm):</label>
+            <input type="number" id="heightInput" placeholder="Height in cm">
+        </div>
+        <div id="cameraFeed"></div>
+        <div class="button-container">
+            <button onclick="startCamera()">Start Camera Feed</button>
+            <button onclick="stopCamera()" disabled>Stop Camera Feed</button>
+            <button onclick="showCalories()">Show Calories Burned</button>
+            <button onclick="calculateBMIAndProvideFeedback()">Calculate BMI</button>
+        </div>
+        <div id="calories"></div>
+        <div id="bmi"></div>
+        <div id="bmiChart">
+            <h2>BMI Chart:</h2>
+            <p><span class="bmi-indicator underweight"></span> Underweight: &lt; 18.5</p>
+            <p><span class="bmi-indicator normal-weight"></span> Normal weight: 18.5 - 24.9</p>
+            <p><span class="bmi-indicator overweight"></span> Overweight: 25 - 29.9</p>
+            <p><span class="bmi-indicator obese"></span> Obesity: &ge; 30</p>
+        </div>
+        <div id="userFeedback" class="user-feedback"></div>
+        <div id="loader" class="loader"></div>
+    </div>
+
+    <script>
+        var cameraFeedDiv = document.getElementById('cameraFeed');
+        var startButton = document.querySelector('button:nth-of-type(1)');
+        var stopButton = document.querySelector('button:nth-of-type(2)');
+        var weightSelect = document.getElementById('weightSelect');
+        var userWeightInput = document.getElementById('userWeight');
+        var heightInput = document.getElementById('heightInput');
+        var caloriesDiv = document.getElementById('calories');
+        var bmiDiv = document.getElementById('bmi');
+        var loader = document.getElementById('loader');
+        var userFeedbackDiv = document.getElementById('userFeedback');
+
+        function startCamera() {
+            loader.style.display = 'block';
+            cameraFeedDiv.innerHTML = '<img src="/start_feed" alt="Camera Feed">';
+            startButton.disabled = true;
+            stopButton.disabled = false;
+            caloriesDiv.innerHTML = '';
+            bmiDiv.innerHTML = '';
+            userFeedbackDiv.innerHTML = '';
+            loader.style.display = 'none';
+        }
+
+        function stopCamera() {
+            fetch('/reset_counter')
+                .then(response => {
+                    if (response.ok) {
+                        cameraFeedDiv.innerHTML = '';
+                        startButton.disabled = false;
+                        stopButton.disabled = true;
+                    } else {
+                        throw new Error('Failed to reset counter.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+        }
+
+        function showCalories() {
+            loader.style.display = 'block';
+            var formData = new FormData();
+            formData.append('weight', weightSelect.value);
+
+            fetch('/select_weight', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return fetch('/calculate_calories', {
+                        method: 'POST'
+                    });
+                } else {
+                    throw new Error('Failed to select weight.');
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                caloriesDiv.innerHTML = 'Calories Burned: ' + data;
+                loader.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                loader.style.display = 'none';
+            });
+        }
+
+        function provideFeedback(bmi) {
+            var feedbackMessage;
+
+            if (bmi < 18.5) {
+                feedbackMessage = "Your BMI indicates that you are underweight. Consider increasing your calorie intake and incorporating strength training exercises to build muscle mass.";
+            } else if (bmi >= 18.5 && bmi < 25) {
+                feedbackMessage = "Your BMI is within the normal range. Keep up the good work with your fitness routine and healthy eating habits!";
+            } else if (bmi >= 25 && bmi < 30) {
+                feedbackMessage = "Your BMI indicates that you are overweight. Focus on consuming a balanced diet with fewer calories and increase your physical activity levels to achieve a healthier weight.";
+            } else {
+                feedbackMessage = "Your BMI indicates that you are obese. It's essential to prioritize weight loss through a combination of diet modifications, regular exercise, and lifestyle changes. Consult with a healthcare professional for personalized guidance.";
+            }
+
+            userFeedbackDiv.innerHTML = '<div class="feedback"><h3>Feedback:</h3><p>' + feedbackMessage + '</p></div>';
+        }
+
+        function calculateBMIAndProvideFeedback() {
+            var height = parseFloat(heightInput.value) / 100;
+            var weight = parseFloat(userWeightInput.value);
+
+            if (!isNaN(height) && !isNaN(weight)) {
+                var bmi = weight / (height * height);
+                var bmiClass = getBMIClass(bmi);
+                bmiDiv.innerHTML = 'Your BMI: <span class="' + bmiClass + '">' + bmi.toFixed(2) + '</span>';
+                provideFeedback(bmi);
+            } else {
+                bmiDiv.innerHTML = 'Please enter valid height and weight.';
+            }
+        }
+
+        function getBMIClass(bmi) {
+            if (bmi < 18.5) {
+                return 'underweight';
+            } else if (bmi >= 18.5 && bmi < 25) {
+                return 'normal-weight';
+            } else if (bmi >= 25 && bmi < 30) {
+                return 'overweight';
+            } else {
+                return 'obese';
+            }
+        }
+    </script>
+</body>
+</html>
