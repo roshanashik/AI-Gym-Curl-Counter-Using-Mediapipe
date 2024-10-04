@@ -3,6 +3,8 @@
 # Overview
 This project is a web-based application using Python and Flask. It incorporates pose estimation using Mediapipe and image processing through OpenCV. The project allows users to interact with the web application through different templates, with a focus on pose recognition.
 
+![App Screenshot](images/Screenshot 2024-05-05 214005.png)
+
 # Project Structure
 app3.py: The main Python script to run the application. It sets up the web server using Flask and handles the pose estimation logic.
 Untitled.ipynb: A Jupyter notebook that may contain additional code or analysis.
